@@ -230,8 +230,8 @@ def take_input(state, bot_move):
         box_dict = {0: "Upper Left", 1: "Upper Center", 2: "Upper Right",
                     3: "Center Left", 4: "Center", 5: "Center Right",
                     6: "Bottom Left", 7: "Bottom Center", 8: "Bottom Right"}
-        print("Where would you like to place 'X' in ~~"
-              + box_dict[next_box(bot_move)] + "~~ box?")
+        print("Where would you like to place 'X' in *"
+              + box_dict[next_box(bot_move)] + "* box?")
     x = int(input("Row = "))
     if x == -1:
         raise SystemExit
@@ -267,8 +267,7 @@ def game(state="." * 81, depth=5):
 
         user_state = add_piece(state, user_move, "X")
         box_won = update_box_won(user_state)
-#        print("New Board:")
-#        print_board(user_state)
+        print_board(user_state)
 
         game_won = check_game_status(user_state)
         if game_won != ".":
@@ -281,7 +280,6 @@ def game(state="." * 81, depth=5):
 
         print("#" * 40)
         print("Bot placed 'O' on", bot_move, "\n")
-        print("New Board:")
         print_board(bot_state)
         state = bot_state
 
@@ -290,9 +288,9 @@ def game(state="." * 81, depth=5):
             break
 
     if game_won == "X":
-        print("~~~~~Congratulations You WIN~~~~~")
+        print("$$$$$ Congratulations YOU WIN! $$$$$")
     else:
-        print("You LOSE!")
+        print("~~~~~ YOU LOSE! ~~~~~")
 
     return state
 
