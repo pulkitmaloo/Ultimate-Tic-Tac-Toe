@@ -220,10 +220,17 @@ def valid_input(state, move):
 
 def take_input(state, bot_move):
     print("#" * 40)
-
-    print("Where would you like to place your piece to in board", end=" ")
-    if bot_move != -1:
-        print("#" + str(next_box(bot_move)) + "?")
+    all_open_flag = False
+    if bot_move == -1 or len(possible_moves(bot_move)) > 9:
+        all_open_flag = True
+    if all_open_flag:
+        print("Play anywhere you want!")
+    else:
+        box_dict = {0: "Upper Left", 1: "Upper Center", 2: "Upper Right",
+                    3: "Center Left", 4: "Center", 5: "Center Right",
+                    6: "Bottom Left", 7: "Bottom Center", 8: "Bottom Right"}
+        print("Where would you like to place 'X' in ~~"
+              + box_dict[next_box(bot_move)] + "~~ box?")
     x = int(input("Row = "))
     if x == -1:
         raise SystemExit
@@ -254,14 +261,17 @@ def game(state="."*81):
             print("Invalid input !!!")
             continue
         except SystemError:
+            print("Game Stopped!")
             break
 
         user_state = add_piece(state, user_move, "X")
         box_won = update_box_won(user_state)
-        print("New Board:")
-        print_board(user_state)
+#        print("New Board:")
+#        print_board(user_state)
 
-        if check_game_status(user_state) != ".":
+        game_won = check_game_status(user_state)
+        if game_won != ".":
+            state = user_state
             break
 
         print("Please wait, Bot is thinking...")
@@ -269,15 +279,19 @@ def game(state="."*81):
         box_won = update_box_won(bot_state)
 
         print("#" * 40)
-        print("Bot placed O on", bot_move, "\n")
+        print("Bot placed 'O' on", bot_move, "\n")
         print("New Board:")
         print_board(bot_state)
         state = bot_state
 
-        if check_game_status(state) != ".":
+        game_won = check_game_status(state)
+        if game_won != ".":
             break
 
-    print("Game won by ", check_game_status(state))
+    if game_won == "X":
+        print("~~~~~Congratulations you WIN~~~~~")
+    else:
+        print("you LOSE!")
 
     return state
 
