@@ -95,8 +95,10 @@ def possible_moves(last_move):
     box_to_play = next_box(last_move)
     idxs = indices_of_box(box_to_play)
     if box_won[box_to_play] != ".":
-        possible_indices = sum([indices_of_box(b) for b in range(9)
-                                if box_won[b] == "."], [])
+        possible_indices = []
+        for b in range(9):
+            if box_won[b] == ".":
+                possible_indices += indices_of_box(b)
     else:
         possible_indices = idxs
     return possible_indices
@@ -141,14 +143,13 @@ def evaluate_small_box(box_str, player):
         current = Counter([box_str[x], box_str[y], box_str[z]])
 
         if current == three:
-            score = 100
-            return score
+            score += 100
         elif current == two:
             score += 10
         elif current == one:
             score += 1
         elif current == three_opponent:
-            score = -100
+            score -= 100
             return score
         elif current == two_opponent:
             score -= 10
@@ -243,7 +244,7 @@ def take_input(state, bot_move):
     return (x, y)
 
 
-def game(state="."*81):
+def game(state="." * 81, depth=5):
     global box_won, possible_goals
     possible_goals = [(0, 4, 8), (2, 4, 6)]
     possible_goals += [(i, i+3, i+6) for i in range(3)]
@@ -258,7 +259,7 @@ def game(state="."*81):
         try:
             user_move = take_input(state, bot_move)
         except ValueError:
-            print("Invalid input !!!")
+            print("Invalid input or move not possible!")
             continue
         except SystemError:
             print("Game Stopped!")
@@ -275,7 +276,7 @@ def game(state="."*81):
             break
 
         print("Please wait, Bot is thinking...")
-        (bot_state, bot_move) = minimax(user_state, user_move, "O", depth=5)
+        bot_state, bot_move = minimax(user_state, user_move, "O", depth=depth)
         box_won = update_box_won(bot_state)
 
         print("#" * 40)
@@ -289,9 +290,9 @@ def game(state="."*81):
             break
 
     if game_won == "X":
-        print("~~~~~Congratulations you WIN~~~~~")
+        print("~~~~~Congratulations You WIN~~~~~")
     else:
-        print("you LOSE!")
+        print("You LOSE!")
 
     return state
 
@@ -299,4 +300,4 @@ def game(state="."*81):
 if __name__ == "__main__":
 
     INITIAL_STATE = "." * 81
-    final_state = game(INITIAL_STATE)
+    final_state = game(INITIAL_STATE, depth=5)
