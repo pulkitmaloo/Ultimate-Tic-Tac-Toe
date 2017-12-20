@@ -113,7 +113,7 @@ def print_successors(state, player, last_move):
         print_board(st[0])
 
 
-def change_player(p):
+def opponent(p):
     return "O" if p == "X" else "X"
 
 
@@ -123,9 +123,9 @@ def evaluate_small_box(box_str, player):
     three = Counter(player * 3)
     two = Counter(player * 2 + ".")
     one = Counter(player * 1 + "." * 2)
-    three_opponent = Counter(change_player(player) * 3)
-    two_opponent = Counter(change_player(player) * 2 + ".")
-    one_opponent = Counter(change_player(player) * 1 + "." * 2)
+    three_opponent = Counter(opponent(player) * 3)
+    two_opponent = Counter(opponent(player) * 2 + ".")
+    one_opponent = Counter(opponent(player) * 1 + "." * 2)
 
     for idxs in possible_goals:
         (x, y, z) = idxs
@@ -163,7 +163,7 @@ def minimax(state, last_move, player, depth=1):
     succ = successors(state, player, last_move)
     best_move = (-inf, None)
     for s in succ:
-        val = min_turn(s[0], s[1], change_player(player), depth-1, -inf, inf)
+        val = min_turn(s[0], s[1], opponent(player), depth-1, -inf, inf)
         if val > best_move[0]:
             best_move = (val, s)
 #        print("val = ", val)
@@ -173,10 +173,10 @@ def minimax(state, last_move, player, depth=1):
 
 def min_turn(state, last_move, player, depth, alpha, beta):
     if depth <= 0:
-        return evaluate(state, last_move, change_player(player))
+        return evaluate(state, last_move, opponent(player))
     succ = successors(state, player, last_move)
     for s in succ:
-        val = max_turn(s[0], s[1], change_player(player), depth-1, alpha, beta)
+        val = max_turn(s[0], s[1], opponent(player), depth-1, alpha, beta)
         if val < beta:
             beta = val
         if alpha >= beta:
@@ -189,7 +189,7 @@ def max_turn(state, last_move, player, depth, alpha, beta):
         return evaluate(state, last_move, player)
     succ = successors(state, player, last_move)
     for s in succ:
-        val = min_turn(s[0], s[1], change_player(player), depth-1, alpha, beta)
+        val = min_turn(s[0], s[1], opponent(player), depth-1, alpha, beta)
         if alpha < val:
             alpha = val
         if alpha >= beta:
