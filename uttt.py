@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on %(date)s
-
-@author: %(Pulkit Maloos)s
+@author: Pulkit Maloo
 """
 
 # =============================================================================
@@ -27,6 +25,7 @@ Created on %(date)s
 
 from math import inf
 from collections import Counter
+import itertools
 
 
 def index(x, y):
@@ -62,19 +61,15 @@ def print_board(state):
 
 def add_piece(state, move, player):
     if not isinstance(move, int):
-        idx = index(move[0], move[1])
-    else:
-        idx = move
-    new_state = list(state)
-    new_state[idx] = player
-    return "".join(new_state)
+        move = index(move[0], move[1])
+    return state[: move] + player + state[move+1:]
 
 
 def update_box_won(state):
-    temp_box_win = ["."]*9
+    temp_box_win = ["."] * 9
     for b in range(9):
-        idxs = indices_of_box(b)
-        box_str = state[idxs[0]: idxs[-1]+1]
+        idxs_box = indices_of_box(b)
+        box_str = state[idxs_box[0]: idxs_box[-1]+1]
         temp_box_win[b] = check_small_box(box_str)
     return temp_box_win
 
@@ -95,10 +90,8 @@ def possible_moves(last_move):
     box_to_play = next_box(last_move)
     idxs = indices_of_box(box_to_play)
     if box_won[box_to_play] != ".":
-        possible_indices = []
-        for b in range(9):
-            if box_won[b] == ".":
-                possible_indices += indices_of_box(b)
+        pi_2d = [indices_of_box(b) for b in range(9) if box_won[b] == "."]
+        possible_indices = list(itertools.chain.from_iterable(pi_2d))
     else:
         possible_indices = idxs
     return possible_indices
@@ -118,10 +111,6 @@ def successors(state, player, last_move):
 def print_successors(state, player, last_move):
     for st in successors(state, player, last_move):
         print_board(st[0])
-
-
-def check_game_status(state):
-    return check_small_box(update_box_won(state))
 
 
 def change_player(p):
@@ -162,7 +151,7 @@ def evaluate_small_box(box_str, player):
 def evaluate(state, last_move, player):
     global box_won
     score = 0
-    score += evaluate_small_box(box_won, player) * 100
+    score += evaluate_small_box(box_won, player) * 1000
     for b in range(9):
         idxs = indices_of_box(b)
         box_str = state[idxs[0]: idxs[-1]+1]
@@ -230,8 +219,8 @@ def take_input(state, bot_move):
         box_dict = {0: "Upper Left", 1: "Upper Center", 2: "Upper Right",
                     3: "Center Left", 4: "Center", 5: "Center Right",
                     6: "Bottom Left", 7: "Bottom Center", 8: "Bottom Right"}
-        print("Where would you like to place 'X' in *"
-              + box_dict[next_box(bot_move)] + "* box?")
+        print("Where would you like to place 'X' in ~"
+              + box_dict[next_box(bot_move)] + "~ box?")
     x = int(input("Row = "))
     if x == -1:
         raise SystemExit
@@ -250,9 +239,7 @@ def game(state="." * 81, depth=5):
     possible_goals += [(i, i+3, i+6) for i in range(3)]
     possible_goals += [(3*i, 3*i+1, 3*i+2) for i in range(3)]
     box_won = update_box_won(state)
-
     print_board(state)
-
     bot_move = -1
 
     while True:
@@ -266,24 +253,23 @@ def game(state="." * 81, depth=5):
             break
 
         user_state = add_piece(state, user_move, "X")
-        box_won = update_box_won(user_state)
         print_board(user_state)
+        box_won = update_box_won(user_state)
 
-        game_won = check_game_status(user_state)
+        game_won = check_small_box(box_won)
         if game_won != ".":
             state = user_state
             break
 
         print("Please wait, Bot is thinking...")
         bot_state, bot_move = minimax(user_state, user_move, "O", depth=depth)
-        box_won = update_box_won(bot_state)
 
         print("#" * 40)
         print("Bot placed 'O' on", bot_move, "\n")
         print_board(bot_state)
         state = bot_state
-
-        game_won = check_game_status(state)
+        box_won = update_box_won(bot_state)
+        game_won = check_small_box(box_won)
         if game_won != ".":
             break
 
