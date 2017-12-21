@@ -155,7 +155,7 @@ def evaluate_small_box(box_str, player):
 def evaluate(state, last_move, player):
     global box_won
     score = 0
-    score += evaluate_small_box(box_won, player) * 1000
+    score += evaluate_small_box(box_won, player) * 200
     for b in range(9):
         idxs = indices_of_box(b)
         box_str = state[idxs[0]: idxs[-1]+1]
@@ -178,7 +178,7 @@ def minimax(state, last_move, player, depth, s_time):
 
 def min_turn(state, last_move, player, depth, s_time, alpha, beta):
     global box_won
-    if depth <= 0 or time() - s_time >= 10 or check_small_box(box_won) != ".":
+    if depth <= 0 or check_small_box(box_won) != ".":# or time() - s_time >= 10:
         return evaluate(state, last_move, opponent(player))
     succ = successors(state, player, last_move)
     for s in succ:
@@ -193,7 +193,7 @@ def min_turn(state, last_move, player, depth, s_time, alpha, beta):
 
 def max_turn(state, last_move, player, depth, s_time, alpha, beta):
     global box_won
-    if depth <= 0 or time() - s_time >= 10 or check_small_box(box_won) != ".":
+    if depth <= 0 or check_small_box(box_won) != ".":# or time() - s_time >= 20:
         return evaluate(state, last_move, player)
     succ = successors(state, player, last_move)
     for s in succ:
@@ -296,4 +296,4 @@ def game(state="." * 81, depth=20):
 if __name__ == "__main__":
 
     INITIAL_STATE = "." * 81
-    final_state = game(INITIAL_STATE, depth=20)
+    final_state = game(INITIAL_STATE, depth=5)
