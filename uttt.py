@@ -26,6 +26,10 @@
 from math import inf
 from collections import Counter
 import itertools
+from time import time
+
+
+TIME_LIMIT = 5
 
 
 def index(x, y):
@@ -159,11 +163,12 @@ def evaluate(state, last_move, player):
     return score
 
 
-def minimax(state, last_move, player, depth=1):
+def minimax(state, last_move, player, depth, s_time):
     succ = successors(state, player, last_move)
     best_move = (-inf, None)
     for s in succ:
-        val = min_turn(s[0], s[1], opponent(player), depth-1, -inf, inf)
+        val = min_turn(s[0], s[1], opponent(player), depth-1, s_time,
+                       -inf, inf)
         if val > best_move[0]:
             best_move = (val, s)
 #        print("val = ", val)
@@ -171,12 +176,14 @@ def minimax(state, last_move, player, depth=1):
     return best_move[1]
 
 
-def min_turn(state, last_move, player, depth, alpha, beta):
-    if depth <= 0:
+def min_turn(state, last_move, player, depth, s_time, alpha, beta):
+    global box_won
+    if depth <= 0 or time() - s_time >= 10 or check_small_box(box_won) != ".":
         return evaluate(state, last_move, opponent(player))
     succ = successors(state, player, last_move)
     for s in succ:
-        val = max_turn(s[0], s[1], opponent(player), depth-1, alpha, beta)
+        val = max_turn(s[0], s[1], opponent(player), depth-1, s_time,
+                       alpha, beta)
         if val < beta:
             beta = val
         if alpha >= beta:
@@ -184,12 +191,14 @@ def min_turn(state, last_move, player, depth, alpha, beta):
     return beta
 
 
-def max_turn(state, last_move, player, depth, alpha, beta):
-    if depth <= 0:
+def max_turn(state, last_move, player, depth, s_time, alpha, beta):
+    global box_won
+    if depth <= 0 or time() - s_time >= 10 or check_small_box(box_won) != ".":
         return evaluate(state, last_move, player)
     succ = successors(state, player, last_move)
     for s in succ:
-        val = min_turn(s[0], s[1], opponent(player), depth-1, alpha, beta)
+        val = min_turn(s[0], s[1], opponent(player), depth-1, s_time,
+                       alpha, beta)
         if alpha < val:
             alpha = val
         if alpha >= beta:
@@ -233,7 +242,7 @@ def take_input(state, bot_move):
     return (x, y)
 
 
-def game(state="." * 81, depth=5):
+def game(state="." * 81, depth=20):
     global box_won, possible_goals
     possible_goals = [(0, 4, 8), (2, 4, 6)]
     possible_goals += [(i, i+3, i+6) for i in range(3)]
@@ -247,6 +256,7 @@ def game(state="." * 81, depth=5):
             user_move = take_input(state, bot_move)
         except ValueError:
             print("Invalid input or move not possible!")
+            print_board(state)
             continue
         except SystemError:
             print("Game Stopped!")
@@ -262,7 +272,9 @@ def game(state="." * 81, depth=5):
             break
 
         print("Please wait, Bot is thinking...")
-        bot_state, bot_move = minimax(user_state, user_move, "O", depth=depth)
+        s_time = time()
+        bot_state, bot_move = minimax(user_state, user_move, "O", depth,
+                                      s_time)
 
         print("#" * 40)
         print("Bot placed 'O' on", bot_move, "\n")
@@ -284,4 +296,4 @@ def game(state="." * 81, depth=5):
 if __name__ == "__main__":
 
     INITIAL_STATE = "." * 81
-    final_state = game(INITIAL_STATE, depth=5)
+    final_state = game(INITIAL_STATE, depth=20)
